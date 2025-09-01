@@ -18,10 +18,9 @@ app.get("/api/login", async (req, res) => {
 
     const [email, senha] = lista.split("|");
 
-    // CORRIGIDO para puppeteerExtra, NÃO use puppeteer direto!
     const browser = await puppeteerExtra.launch({
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
-      headless: true, // Recomendo headless true em ambientes de hosting!
+      headless: false, // Recomendo headless true em ambientes de hosting!
     });
 
     const page = await browser.newPage();
@@ -36,12 +35,9 @@ app.get("/api/login", async (req, res) => {
     await page.waitForSelector(emailSelector, { visible: true });
     await page.type(emailSelector, email, { delay: 100 });
 
-    // Continuar
     const continueSelector =
       "body > div.c-outermost-ctn.j-outermost-ctn > div.container-fluid-1200.j-login-container.she-v-cloak-none > div > div > div > div.page__login-top-style > div.page__login-newUI-continue > div.actions > div > div > button";
     await page.click(continueSelector);
-
-    await new Promise((resolve) => setTimeout(resolve, 2000));
 
     // Verifica se pediu criar conta
     const seletor =
@@ -60,14 +56,14 @@ app.get("/api/login", async (req, res) => {
     const passwordSelector =
       "body > div.c-outermost-ctn.j-outermost-ctn > div.container-fluid-1200.j-login-container.she-v-cloak-none > div > div > div > div.page__login-top-style > div:nth-child(2) > div > div.sui-dialog__ctn.sui-animation__dialog_W480 > div > div.sui-dialog__body > div.page__login-newUI-emailPannel > div.main-content > div:nth-child(2) > div > div > input";
     await page.waitForSelector(passwordSelector, { visible: true });
-    await page.type(passwordSelector, senha, { delay: 100 });
+    await page.type(passwordSelector, senha, { delay: 10 });
 
     // Botão login
     const loginButtonSelector =
       "body > div.c-outermost-ctn.j-outermost-ctn > div.container-fluid-1200.j-login-container.she-v-cloak-none > div > div > div > div.page__login-top-style > div:nth-child(2) > div > div.sui-dialog__ctn.sui-animation__dialog_W480 > div > div.sui-dialog__body > div.page__login-newUI-emailPannel > div.main-content > div.actions > div > button > span";
     await page.click(loginButtonSelector);
 
-    await new Promise((resolve) => setTimeout(resolve, 3000));
+    await new Promise((resolve) => setTimeout(resolve, 2000));
 
     const elementoErro = await page.$(
       "body > div.c-outermost-ctn.j-outermost-ctn > div.container-fluid-1200.j-login-container.she-v-cloak-none > div > div > div > div.page__login-top-style > div:nth-child(2) > div > div.sui-dialog__ctn.sui-animation__dialog_W480 > div > div.sui-dialog__body > div.page__login-newUI-emailPannel > div.main-content > div.page__login_input-filed.page__login-newUI-input.error > p"
