@@ -21,7 +21,7 @@ app.get("/api/login", async (req, res) => {
     // CORRIGIDO para puppeteerExtra, NÃO use puppeteer direto!
     const browser = await puppeteerExtra.launch({
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
-      headless: false, // Recomendo headless true em ambientes de hosting!
+      headless: true, // Recomendo headless true em ambientes de hosting!
     });
 
     const page = await browser.newPage();
