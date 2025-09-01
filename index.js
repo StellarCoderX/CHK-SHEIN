@@ -4,32 +4,31 @@ const StealthPlugin = require("puppeteer-extra-plugin-stealth");
 puppeteerExtra.use(StealthPlugin());
 
 const app = express();
-const PORT = process.env.PORT || 3000; // Corrigido "" no PORT
+const PORT = process.env.PORT || 3000;
 
 app.get("/api/login", async (req, res) => {
   try {
     const { lista } = req.query;
-    // Corrigido operador para validação
     if (!lista || !lista.includes("|")) {
-      return res
-        .status(400)
-        .json({ error: "Formato inválido! Use /api/login?lista=email|senha" });
+      return res.status(400).json({
+        success: false,
+        error: "Formato inválido! Use /api/login?lista=email|senha",
+      });
     }
 
     const [email, senha] = lista.split("|");
 
     const browser = await puppeteerExtra.launch({
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
-      headless: true, // Recomendo headless true em ambientes de hosting!
+      headless: true,
     });
 
     const page = await browser.newPage();
-
     await page.goto("https://br.shein.com/user/auth/login", {
       waitUntil: "networkidle2",
     });
 
-    // Email
+    // Preenche email
     const emailSelector =
       "body > div.c-outermost-ctn.j-outermost-ctn > div.container-fluid-1200.j-login-container.she-v-cloak-none > div > div > div > div.page__login-top-style > div.page__login-newUI-continue > div.page__login_input-filed.page__login-newUI-input > div > div.input_filed-wrapper > div > div > input";
     await page.waitForSelector(emailSelector, { visible: true });
@@ -48,7 +47,11 @@ app.get("/api/login", async (req, res) => {
       const texto = await page.evaluate((el) => el.textContent, elemento);
       if (texto.trim() === "Crie sua SHEIN conta.") {
         await browser.close();
-        return res.send("Conta não existe");
+        return res.json({
+          success: false,
+          status: "Conta não existe",
+          email,
+        });
       }
     }
 
@@ -69,15 +72,29 @@ app.get("/api/login", async (req, res) => {
       "body > div.c-outermost-ctn.j-outermost-ctn > div.container-fluid-1200.j-login-container.she-v-cloak-none > div > div > div > div.page__login-top-style > div:nth-child(2) > div > div.sui-dialog__ctn.sui-animation__dialog_W480 > div > div.sui-dialog__body > div.page__login-newUI-emailPannel > div.main-content > div.page__login_input-filed.page__login-newUI-input.error > p"
     );
 
+    await browser.close();
+
     if (elementoErro) {
-      await browser.close();
-      return res.send("Login inválido");
+      return res.json({
+        success: false,
+        status: "Login inválido",
+        email,
+        senha,
+      });
     } else {
-      await browser.close();
-      return res.send("Login efetuado");
+      return res.json({
+        success: true,
+        status: "Login efetuado",
+        email,
+        senha,
+      });
     }
   } catch (error) {
-    res.status(500).json({ error: "Erro interno no servidor" });
+    return res.status(500).json({
+      success: false,
+      error: "Erro interno no servidor",
+      details: error.message,
+    });
   }
 });
 
