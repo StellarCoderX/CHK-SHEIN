@@ -7,6 +7,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.get("/api/login", async (req, res) => {
+  let browser;
   try {
     const { lista } = req.query;
     if (!lista || !lista.includes("|")) {
@@ -18,9 +19,9 @@ app.get("/api/login", async (req, res) => {
 
     const [email, senha] = lista.split("|");
 
-    const browser = await puppeteerExtra.launch({
+    browser = await puppeteerExtra.launch({
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
-      headless: true,
+      headless: false,
     });
 
     const page = await browser.newPage();
@@ -37,6 +38,8 @@ app.get("/api/login", async (req, res) => {
     const continueSelector =
       "body > div.c-outermost-ctn.j-outermost-ctn > div.container-fluid-1200.j-login-container.she-v-cloak-none > div > div > div > div.page__login-top-style > div.page__login-newUI-continue > div.actions > div > div > button";
     await page.click(continueSelector);
+
+    await new Promise((resolve) => setTimeout(resolve, 15000));
 
     // Verifica se pediu criar conta
     const seletor =
@@ -90,6 +93,7 @@ app.get("/api/login", async (req, res) => {
       });
     }
   } catch (error) {
+    if (browser) await browser.close();
     return res.status(500).json({
       success: false,
       error: "Erro interno no servidor",
