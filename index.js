@@ -19,12 +19,28 @@ app.get("/api/login", async (req, res) => {
 
     const [email, senha] = lista.split("|");
 
+    const proxyHost = "104.253.13.28";
+    const proxyPort = "5460";
+    const proxyUser = "ynrpepkl";
+    const proxyPass = "nbzps5ke6ruj";
+
     browser = await puppeteerExtra.launch({
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
-      headless: false,
+      headless: true,
+      args: [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        `--proxy-server=${proxyHost}:${proxyPort}`,
+      ],
     });
 
     const page = await browser.newPage();
+
+    // autenticação no proxy
+    await page.authenticate({
+      username: proxyUser,
+      password: proxyPass,
+    });
+
     await page.goto("https://br.shein.com/user/auth/login", {
       waitUntil: "networkidle2",
     });
@@ -39,7 +55,7 @@ app.get("/api/login", async (req, res) => {
       "body > div.c-outermost-ctn.j-outermost-ctn > div.container-fluid-1200.j-login-container.she-v-cloak-none > div > div > div > div.page__login-top-style > div.page__login-newUI-continue > div.actions > div > div > button";
     await page.click(continueSelector);
 
-    await new Promise((resolve) => setTimeout(resolve, 15000));
+    await new Promise((resolve) => setTimeout(resolve, 2000));
 
     // Verifica se pediu criar conta
     const seletor =
