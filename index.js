@@ -9,7 +9,8 @@ const PORT = process.env.PORT || 3000;
 app.get("/api/login", async (req, res) => {
   let browser;
   try {
-    const { lista } = req.query;
+    const { lista, proxy_host, proxy_port, proxy_user, proxy_pass } = req.query;
+
     if (!lista || !lista.includes("|")) {
       return res.status(400).json({
         success: false,
@@ -19,10 +20,19 @@ app.get("/api/login", async (req, res) => {
 
     const [email, senha] = lista.split("|");
 
-    const proxyHost = "104.253.13.28";
-    const proxyPort = "5460";
-    const proxyUser = "ynrpepkl";
-    const proxyPass = "nbzps5ke6ruj";
+    // Configuração padrão de proxy (fallback)
+    let proxyHost = "104.253.13.28";
+    let proxyPort = "5460";
+    let proxyUser = "ynrpepkl";
+    let proxyPass = "nbzps5ke6ruj";
+
+    // Usar proxy personalizado se fornecido
+    if (proxy_host && proxy_port && proxy_user && proxy_pass) {
+      proxyHost = proxy_host;
+      proxyPort = proxy_port;
+      proxyUser = proxy_user;
+      proxyPass = proxy_pass;
+    }
 
     browser = await puppeteerExtra.launch({
       headless: true,
