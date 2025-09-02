@@ -107,7 +107,7 @@ app.get("/api/login", async (req, res) => {
       console.log("Nenhum captcha detectado.");
     }
 
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    await new Promise((resolve) => setTimeout(resolve, 4000));
 
     // Verifica se pediu criar conta
     const seletor =
@@ -189,4 +189,5 @@ app.get("/api/login", async (req, res) => {
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
 });
+
 
