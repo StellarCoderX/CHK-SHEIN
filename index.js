@@ -61,27 +61,29 @@ app.get("/api/login", async (req, res) => {
       });
     }
 
-    await page.goto("https://www.shein.com/user/auth/login", {
-      waitUntil: "domcontentloaded",
-      timeout: 60000, // Tempo limite de 60 segundos
+    await page.goto("https://br.shein.com/user/auth/login", {
+      waitUntil: "networkidle2",
     });
 
     // Preenche email
     const emailSelector =
       "body > div.c-outermost-ctn.j-outermost-ctn > div.container-fluid-1200.j-login-container.she-v-cloak-none > div > div > div > div.page__login-top-style > div.page__login-newUI-continue > div.page__login_input-filed.page__login-newUI-input > div > div.input_filed-wrapper > div > div > input";
-    await page.waitForSelector(emailSelector, { visible: true });
+    await page.waitForSelector(emailSelector, {
+      visible: true,
+      timeout: 60000,
+    });
     await page.type(emailSelector, email, { delay: 100 });
 
     const continueSelector =
       "body > div.c-outermost-ctn.j-outermost-ctn > div.container-fluid-1200.j-login-container.she-v-cloak-none > div > div > div > div.page__login-top-style > div.page__login-newUI-continue > div.actions > div > div > button";
     await page.click(continueSelector);
 
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    //await new Promise((resolve) => setTimeout(resolve, 2000));
 
     try {
       await page.waitForSelector(
         "body > div:nth-child(129) > div.geetest_panel_box.geetest_panelshowslide > div.geetest_panel_next > div > div.geetest_wrap > div.geetest_slider.geetest_ready > div.geetest_slider_button",
-        { timeout: 3000 }
+        { timeout: 4000 } // Aumentei para 10 segundos
       );
 
       await browser.close();
@@ -126,7 +128,10 @@ app.get("/api/login", async (req, res) => {
     // Senha
     const passwordSelector =
       "body > div.c-outermost-ctn.j-outermost-ctn > div.container-fluid-1200.j-login-container.she-v-cloak-none > div > div > div > div.page__login-top-style > div:nth-child(2) > div > div.sui-dialog__ctn.sui-animation__dialog_W480 > div > div.sui-dialog__body > div.page__login-newUI-emailPannel > div.main-content > div:nth-child(2) > div > div > input";
-    await page.waitForSelector(passwordSelector, { visible: true });
+    await page.waitForSelector(passwordSelector, {
+      visible: true,
+      timeout: 60000,
+    });
     await page.type(passwordSelector, senha, { delay: 10 });
 
     // Botão login
@@ -134,7 +139,7 @@ app.get("/api/login", async (req, res) => {
       "body > div.c-outermost-ctn.j-outermost-ctn > div.container-fluid-1200.j-login-container.she-v-cloak-none > div > div > div > div.page__login-top-style > div:nth-child(2) > div > div.sui-dialog__ctn.sui-animation__dialog_W480 > div > div.sui-dialog__body > div.page__login-newUI-emailPannel > div.main-content > div.actions > div > button > span";
     await page.click(loginButtonSelector);
 
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    await new Promise((resolve) => setTimeout(resolve, 3000));
 
     const elementoErro = await page.$(
       "body > div.c-outermost-ctn.j-outermost-ctn > div.container-fluid-1200.j-login-container.she-v-cloak-none > div > div > div > div.page__login-top-style > div:nth-child(2) > div > div.sui-dialog__ctn.sui-animation__dialog_W480 > div > div.sui-dialog__body > div.page__login-newUI-emailPannel > div.main-content > div.page__login_input-filed.page__login-newUI-input.error > p"
