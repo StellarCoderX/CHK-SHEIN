@@ -132,7 +132,7 @@ app.get("/api/login", async (req, res) => {
       "body > div.c-outermost-ctn.j-outermost-ctn > div.container-fluid-1200.j-login-container.she-v-cloak-none > div > div > div > div.page__login-top-style > div:nth-child(2) > div > div.sui-dialog__ctn.sui-animation__dialog_W480 > div > div.sui-dialog__body > div.page__login-newUI-emailPannel > div.main-content > div.actions > div > button > span";
     await page.click(loginButtonSelector);
 
-    await new Promise((resolve) => setTimeout(resolve, 11000));
+    await new Promise((resolve) => setTimeout(resolve, 9000));
 
     // Erro login
     const elementoErro = await page.$(
@@ -177,4 +177,5 @@ app.get("/api/login", async (req, res) => {
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
 });
+
 
