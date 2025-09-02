@@ -36,10 +36,11 @@ app.get("/api/login", async (req, res) => {
     }
 
     const puppeteerArgs = ["--no-sandbox", "--disable-setuid-sandbox"];
-    if (useProxy) puppeteerArgs.push(`--proxy-server=${proxyHost}:${proxyPort}`);
+    if (useProxy)
+      puppeteerArgs.push(`--proxy-server=${proxyHost}:${proxyPort}`);
 
     browser = await puppeteerExtra.launch({
-      headless: true,
+      headless: false,
       args: puppeteerArgs,
     });
 
@@ -86,12 +87,14 @@ app.get("/api/login", async (req, res) => {
         status: "Captcha Detectado :(",
         email,
         proxy: useProxy
-          ? `${proxyHost}:${proxyPort}${useAuth ? ` (auth: ${proxyUser})` : " (sem auth)"}`
+          ? `${proxyHost}:${proxyPort}${
+              useAuth ? ` (auth: ${proxyUser})` : " (sem auth)"
+            }`
           : "IP Local",
       });
     } catch {}
 
-    await new Promise((resolve) => setTimeout(resolve, 6000));
+    await new Promise((resolve) => setTimeout(resolve, 2000));
 
     // Conta inexistente
     const seletorConta =
@@ -107,7 +110,9 @@ app.get("/api/login", async (req, res) => {
           status: "Conta não existe",
           email,
           proxy: useProxy
-            ? `${proxyHost}:${proxyPort}${useAuth ? ` (auth: ${proxyUser})` : " (sem auth)"}`
+            ? `${proxyHost}:${proxyPort}${
+                useAuth ? ` (auth: ${proxyUser})` : " (sem auth)"
+              }`
             : "IP Local",
         });
       }
@@ -116,7 +121,10 @@ app.get("/api/login", async (req, res) => {
     // Campo senha
     const passwordSelector =
       "body > div.c-outermost-ctn.j-outermost-ctn > div.container-fluid-1200.j-login-container.she-v-cloak-none > div > div > div > div.page__login-top-style > div:nth-child(2) > div > div.sui-dialog__ctn.sui-animation__dialog_W480 > div > div.sui-dialog__body > div.page__login-newUI-emailPannel > div.main-content > div:nth-child(2) > div > div > input";
-    await page.waitForSelector(passwordSelector, { visible: true, timeout: 60000 });
+    await page.waitForSelector(passwordSelector, {
+      visible: true,
+      timeout: 60000,
+    });
     await page.type(passwordSelector, senha, { delay: 10 });
 
     // Botão login
@@ -134,7 +142,9 @@ app.get("/api/login", async (req, res) => {
     await browser.close();
 
     const proxyInfo = useProxy
-      ? `${proxyHost}:${proxyPort}${useAuth ? ` (auth: ${proxyUser})` : " (sem auth)"}`
+      ? `${proxyHost}:${proxyPort}${
+          useAuth ? ` (auth: ${proxyUser})` : " (sem auth)"
+        }`
       : "IP Local";
 
     if (elementoErro) {
@@ -167,4 +177,3 @@ app.get("/api/login", async (req, res) => {
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
 });
-
