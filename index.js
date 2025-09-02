@@ -72,6 +72,8 @@ app.get("/api/login", async (req, res) => {
       "body > div.c-outermost-ctn.j-outermost-ctn > div.container-fluid-1200.j-login-container.she-v-cloak-none > div > div > div > div.page__login-top-style > div.page__login-newUI-continue > div.actions > div > div > button";
     await page.click(continueSelector);
 
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+
     // Verifica captcha
     try {
       await page.waitForSelector(
@@ -165,3 +167,4 @@ app.get("/api/login", async (req, res) => {
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
 });
+
