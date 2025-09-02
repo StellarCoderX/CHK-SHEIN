@@ -62,16 +62,22 @@ app.get("/api/login", async (req, res) => {
     }
 
     await page.goto("https://br.shein.com/user/auth/login", {
-      waitUntil: "networkidle2", // Espera apenas o DOM carregar
+      waitUntil: "load", // aguarda a página terminar o carregamento completo
     });
 
-    // Preenche email
+    // aguarda o campo estar disponível e visível
     const emailSelector =
       "body > div.c-outermost-ctn.j-outermost-ctn > div.container-fluid-1200.j-login-container.she-v-cloak-none > div > div > div > div.page__login-top-style > div.page__login-newUI-continue > div.page__login_input-filed.page__login-newUI-input > div > div.input_filed-wrapper > div > div > input";
-    await page.waitForSelector(emailSelector, {
-      visible: true,
-      timeout: 60000,
-    });
+    await page.waitForFunction(
+      (selector) => {
+        const el = document.querySelector(selector);
+        return el && el.offsetParent !== null;
+      },
+      { timeout: 60000 },
+      emailSelector
+    );
+
+    // só depois digita
     await page.type(emailSelector, email, { delay: 100 });
 
     const continueSelector =
