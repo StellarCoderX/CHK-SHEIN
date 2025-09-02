@@ -61,8 +61,9 @@ app.get("/api/login", async (req, res) => {
       });
     }
 
-    await page.goto("https://br.shein.com/user/auth/login", {
-      waitUntil: "networkidle2",
+    await page.goto("https://www.shein.com/user/auth/login", {
+      waitUntil: "domcontentloaded",
+      timeout: 60000, // Tempo limite de 60 segundos
     });
 
     // Preenche email
