@@ -61,7 +61,7 @@ app.get("/api/login", async (req, res) => {
       });
     }
 
-    await page.goto("https://br.shein.com/user/auth/login", {
+    await page.goto("https://br.shein.com/user/auth/login?direction=nav", {
       waitUntil: "load", // aguarda a página terminar o carregamento completo
     });
 
@@ -189,3 +189,4 @@ app.get("/api/login", async (req, res) => {
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
 });
+
