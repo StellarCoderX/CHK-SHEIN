@@ -24,13 +24,10 @@ app.get("/api/login", async (req, res) => {
     let useProxy = false;
     let useAuth = false;
 
-    // Verificar se deve usar proxy
     if (proxy_host && proxy_port) {
       useProxy = true;
       proxyHost = proxy_host;
       proxyPort = proxy_port;
-
-      // Verificar se tem autenticação
       if (proxy_user && proxy_pass) {
         proxyUser = proxy_user;
         proxyPass = proxy_pass;
@@ -38,13 +35,8 @@ app.get("/api/login", async (req, res) => {
       }
     }
 
-    // Configurar argumentos do Puppeteer
     const puppeteerArgs = ["--no-sandbox", "--disable-setuid-sandbox"];
-
-    // Adicionar proxy apenas se especificado
-    if (useProxy) {
-      puppeteerArgs.push(`--proxy-server=${proxyHost}:${proxyPort}`);
-    }
+    if (useProxy) puppeteerArgs.push(`--proxy-server=${proxyHost}:${proxyPort}`);
 
     browser = await puppeteerExtra.launch({
       headless: true,
@@ -53,21 +45,18 @@ app.get("/api/login", async (req, res) => {
 
     const page = await browser.newPage();
 
-    // Autenticação no proxy apenas se necessário
     if (useProxy && useAuth) {
-      await page.authenticate({
-        username: proxyUser,
-        password: proxyPass,
-      });
+      await page.authenticate({ username: proxyUser, password: proxyPass });
     }
 
     await page.goto("https://br.shein.com/user/auth/login?direction=nav", {
-      waitUntil: "load", // aguarda a página terminar o carregamento completo
+      waitUntil: "load",
     });
 
-    // aguarda o campo estar disponível e visível
+    // Campo de email
     const emailSelector =
       "body > div.c-outermost-ctn.j-outermost-ctn > div.container-fluid-1200.j-login-container.she-v-cloak-none > div > div > div > div.page__login-top-style > div.page__login-newUI-continue > div.page__login_input-filed.page__login-newUI-input > div > div.input_filed-wrapper > div > div > input";
+
     await page.waitForFunction(
       (selector) => {
         const el = document.querySelector(selector);
@@ -76,46 +65,39 @@ app.get("/api/login", async (req, res) => {
       { timeout: 60000 },
       emailSelector
     );
-
-    // só depois digita
     await page.type(emailSelector, email, { delay: 100 });
 
+    // Botão continuar
     const continueSelector =
       "body > div.c-outermost-ctn.j-outermost-ctn > div.container-fluid-1200.j-login-container.she-v-cloak-none > div > div > div > div.page__login-top-style > div.page__login-newUI-continue > div.actions > div > div > button";
     await page.click(continueSelector);
 
-    //await new Promise((resolve) => setTimeout(resolve, 2000));
-
+    // Verifica captcha
     try {
       await page.waitForSelector(
         "body > div:nth-child(129) > div.geetest_panel_box.geetest_panelshowslide > div.geetest_panel_next > div > div.geetest_wrap > div.geetest_slider.geetest_ready > div.geetest_slider_button",
-        { timeout: 4000 } // Aumentei para 10 segundos
+        { timeout: 4000 }
       );
-
       await browser.close();
       return res.json({
         success: false,
         status: "Captcha Detectado :(",
         email,
         proxy: useProxy
-          ? `${proxyHost}:${proxyPort}${
-              useAuth ? ` (auth: ${proxyUser})` : " (sem auth)"
-            }`
+          ? `${proxyHost}:${proxyPort}${useAuth ? ` (auth: ${proxyUser})` : " (sem auth)"}`
           : "IP Local",
       });
-    } catch (err) {
-      console.log("Nenhum captcha detectado.");
-    }
+    } catch {}
 
     await new Promise((resolve) => setTimeout(resolve, 6000));
 
-    // Verifica se pediu criar conta
-    const seletor =
+    // Conta inexistente
+    const seletorConta =
       "body > div.c-outermost-ctn.j-outermost-ctn > div.container-fluid-1200.j-login-container.she-v-cloak-none > div > div > div > div.page__login-top-style > div:nth-child(2) > div > div.sui-dialog__ctn.sui-animation__dialog_W480 > div > div.sui-dialog__body > div.page__login-newUI-emailPannel > h2 > p";
 
-    const elemento = await page.$(seletor);
-    if (elemento) {
-      const texto = await page.evaluate((el) => el.textContent, elemento);
+    const elementoConta = await page.$(seletorConta);
+    if (elementoConta) {
+      const texto = await page.evaluate((el) => el.textContent, elementoConta);
       if (texto.trim() === "Crie sua SHEIN conta.") {
         await browser.close();
         return res.json({
@@ -123,21 +105,16 @@ app.get("/api/login", async (req, res) => {
           status: "Conta não existe",
           email,
           proxy: useProxy
-            ? `${proxyHost}:${proxyPort}${
-                useAuth ? ` (auth: ${proxyUser})` : " (sem auth)"
-              }`
+            ? `${proxyHost}:${proxyPort}${useAuth ? ` (auth: ${proxyUser})` : " (sem auth)"}`
             : "IP Local",
         });
       }
     }
 
-    // Senha
+    // Campo senha
     const passwordSelector =
       "body > div.c-outermost-ctn.j-outermost-ctn > div.container-fluid-1200.j-login-container.she-v-cloak-none > div > div > div > div.page__login-top-style > div:nth-child(2) > div > div.sui-dialog__ctn.sui-animation__dialog_W480 > div > div.sui-dialog__body > div.page__login-newUI-emailPannel > div.main-content > div:nth-child(2) > div > div > input";
-    await page.waitForSelector(passwordSelector, {
-      visible: true,
-      timeout: 60000,
-    });
+    await page.waitForSelector(passwordSelector, { visible: true, timeout: 60000 });
     await page.type(passwordSelector, senha, { delay: 10 });
 
     // Botão login
@@ -147,6 +124,7 @@ app.get("/api/login", async (req, res) => {
 
     await new Promise((resolve) => setTimeout(resolve, 9000));
 
+    // Erro login
     const elementoErro = await page.$(
       "body > div.c-outermost-ctn.j-outermost-ctn > div.container-fluid-1200.j-login-container.she-v-cloak-none > div > div > div > div.page__login-top-style > div:nth-child(2) > div > div.sui-dialog__ctn.sui-animation__dialog_W480 > div > div.sui-dialog__body > div.page__login-newUI-emailPannel > div.main-content > div.page__login_input-filed.page__login-newUI-input.error > p"
     );
@@ -154,9 +132,7 @@ app.get("/api/login", async (req, res) => {
     await browser.close();
 
     const proxyInfo = useProxy
-      ? `${proxyHost}:${proxyPort}${
-          useAuth ? ` (auth: ${proxyUser})` : " (sem auth)"
-        }`
+      ? `${proxyHost}:${proxyPort}${useAuth ? ` (auth: ${proxyUser})` : " (sem auth)"}`
       : "IP Local";
 
     if (elementoErro) {
@@ -189,6 +165,3 @@ app.get("/api/login", async (req, res) => {
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
 });
-
-
-
