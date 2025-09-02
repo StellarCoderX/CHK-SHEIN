@@ -40,7 +40,7 @@ app.get("/api/login", async (req, res) => {
       puppeteerArgs.push(`--proxy-server=${proxyHost}:${proxyPort}`);
 
     browser = await puppeteerExtra.launch({
-      headless: false,
+      headless: true,
       args: puppeteerArgs,
     });
 
