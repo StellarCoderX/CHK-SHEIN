@@ -134,36 +134,49 @@ app.get("/api/login", async (req, res) => {
 
     await new Promise((resolve) => setTimeout(resolve, 9000));
 
-    // Erro login
-    const elementoErro = await page.$(
-      "body > div.c-outermost-ctn.j-outermost-ctn > div.container-fluid-1200.j-login-container.she-v-cloak-none > div > div > div > div.page__login-top-style > div:nth-child(2) > div > div.sui-dialog__ctn.sui-animation__dialog_W480 > div > div.sui-dialog__body > div.page__login-newUI-emailPannel > div.main-content > div.page__login_input-filed.page__login-newUI-input.error > p"
-    );
+    const errorSelector =
+      "body > div.c-outermost-ctn.j-outermost-ctn > div.container-fluid-1200.j-login-container.she-v-cloak-none > div > div > div > div.page__login-top-style > div:nth-child(2) > div > div.sui-dialog__ctn.sui-animation__dialog_W480 > div > div.sui-dialog__body > div.page__login-newUI-emailPannel > div.main-content > div.page__login_input-filed.page__login-newUI-input.error > p";
 
-    await browser.close();
-
-    const proxyInfo = useProxy
-      ? `${proxyHost}:${proxyPort}${
-          useAuth ? ` (auth: ${proxyUser})` : " (sem auth)"
-        }`
-      : "IP Local";
+    const elementoErro = await page.$(errorSelector);
 
     if (elementoErro) {
-      return res.json({
-        success: false,
-        status: "Login inválido",
-        email,
-        senha,
-        proxy: proxyInfo,
-      });
-    } else {
-      return res.json({
-        success: true,
-        status: "Login efetuado",
-        email,
-        senha,
-        proxy: proxyInfo,
-      });
+      const textoErro = await page.evaluate(
+        (el) => el.textContent,
+        elementoErro
+      );
+      if (
+        textoErro.includes(
+          "O Endereço de Email ou Senha que você digitou está incorreto"
+        )
+      ) {
+        await browser.close();
+        return res.json({
+          success: false,
+          status: "Login inválido",
+          email,
+          senha,
+          proxy: useProxy
+            ? `${proxyHost}:${proxyPort}${
+                useAuth ? ` (auth: ${proxyUser})` : " (sem auth)"
+              }`
+            : "IP Local",
+        });
+      }
     }
+
+    // Se não houver erro
+    await browser.close();
+    return res.json({
+      success: true,
+      status: "Login efetuado",
+      email,
+      senha,
+      proxy: useProxy
+        ? `${proxyHost}:${proxyPort}${
+            useAuth ? ` (auth: ${proxyUser})` : " (sem auth)"
+          }`
+        : "IP Local",
+    });
   } catch (error) {
     if (browser) await browser.close();
     return res.status(500).json({
@@ -177,5 +190,3 @@ app.get("/api/login", async (req, res) => {
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
 });
-
-
