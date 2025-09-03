@@ -41,10 +41,20 @@ app.get("/api/login", async (req, res) => {
 
     browser = await puppeteerExtra.launch({
       headless: true,
-      args: puppeteerArgs,
+      args: [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--lang=pt-BR", // idioma do navegador
+        useProxy ? `--proxy-server=${proxyHost}:${proxyPort}` : "",
+      ].filter(Boolean),
     });
 
     const page = await browser.newPage();
+
+    // idioma preferencial da página
+    await page.setExtraHTTPHeaders({
+      "Accept-Language": "pt-BR,pt;q=0.9",
+    });
 
     if (useProxy && useAuth) {
       await page.authenticate({ username: proxyUser, password: proxyPass });
