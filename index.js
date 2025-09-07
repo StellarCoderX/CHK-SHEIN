@@ -51,7 +51,6 @@ app.get("/api/login", async (req, res) => {
 
     const page = await browser.newPage();
 
-    // idioma preferencial da página
     await page.setExtraHTTPHeaders({
       "Accept-Language": "pt-BR,pt;q=0.9",
     });
