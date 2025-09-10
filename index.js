@@ -60,8 +60,10 @@ app.get("/api/login", async (req, res) => {
       await page.authenticate({ username: proxyUser, password: proxyPass });
     }
 
+    // CÓDIGO NOVO E CORRIGIDO
     await page.goto("https://br.shein.com/user/auth/login?direction=nav", {
-      waitUntil: "load",
+      waitUntil: "domcontentloaded", // Mais rápido que 'load'
+      timeout: 60000,                // Aumenta o tempo limite para 60 segundos
     });
 
     // Campo de email
@@ -200,4 +202,5 @@ app.get("/api/login", async (req, res) => {
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
 });
+
 
