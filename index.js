@@ -39,13 +39,13 @@ app.get("/api/login", async (req, res) => {
     if (useProxy)
       puppeteerArgs.push(`--proxy-server=${proxyHost}:${proxyPort}`);
 
-    // CÓDIGO NOVO E CORRIGIDO
     browser = await puppeteerExtra.launch({
+      executablePath: "/usr/bin/google-chrome", // Caminho do Chrome no Docker
       headless: true,
       args: [
         "--no-sandbox",
         "--disable-setuid-sandbox",
-        "--lang=pt-BR", // idioma do navegador
+        "--lang=pt-BR",
         useProxy ? `--proxy-server=${proxyHost}:${proxyPort}` : "",
       ].filter(Boolean),
     });
