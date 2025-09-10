@@ -5,8 +5,3 @@ services:
     plan: free
     buildCommand: "npm install"
     startCommand: "node index.js"
-    buildPacks:
-      - url: https://github.com/GoogleCloudPlatform/buildpacks/releases/download/google-chrome%2Fv0.0.1/google.chrome.tgz
-    envVars:
-      - key: PUPPETEER_EXECUTABLE_PATH
-        value: /usr/bin/google-chrome
