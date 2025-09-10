@@ -39,7 +39,9 @@ app.get("/api/login", async (req, res) => {
     if (useProxy)
       puppeteerArgs.push(`--proxy-server=${proxyHost}:${proxyPort}`);
 
+    // CÓDIGO NOVO E CORRIGIDO
     browser = await puppeteerExtra.launch({
+      executablePath: '/usr/bin/google-chrome', // <-- ADICIONE ESTA LINHA
       headless: true,
       args: [
         "--no-sandbox",
@@ -199,4 +201,3 @@ app.get("/api/login", async (req, res) => {
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
 });
-
