@@ -1,7 +1,8 @@
 {
   "dependencies": {
+    "@sparticuz/chromium": "^123.0.1",
     "express": "^5.1.0",
-    "puppeteer": "^24.18.0",
+    "puppeteer-core": "^22.13.1",
     "puppeteer-extra": "^3.3.6",
     "puppeteer-extra-plugin-stealth": "^2.11.2"
   },
