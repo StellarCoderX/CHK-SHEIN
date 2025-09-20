@@ -63,7 +63,8 @@ app.get("/api/login", async (req, res) => {
 
     // CÓDIGO NOVO E CORRIGIDO
     await page.goto("https://br.shein.com/user/auth/login?direction=nav", {
-      waitUntil: "load",
+      waitUntil: "networkidle2",
+      timeout: 90000, // 90 segundos
     });
 
     // Campo de email
@@ -202,6 +203,7 @@ app.get("/api/login", async (req, res) => {
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
 });
+
 
 
 
