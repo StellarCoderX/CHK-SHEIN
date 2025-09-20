@@ -2,6 +2,8 @@ const fs = require("fs-extra");
 const express = require("express");
 const puppeteerExtra = require("puppeteer-extra");
 const StealthPlugin = require("puppeteer-extra-plugin-stealth");
+const chromium = require("@sparticuz/chromium"); // <- Importa chromium do pacote
+
 puppeteerExtra.use(StealthPlugin());
 
 const app = express();
@@ -21,33 +23,24 @@ app.get("/api/login", async (req, res) => {
 
     const [email, senha] = lista.split("|");
 
-    let proxyHost, proxyPort, proxyUser, proxyPass;
     let useProxy = false;
-    let useAuth = false;
+    let proxyString = "";
 
     if (proxy_host && proxy_port) {
       useProxy = true;
-      proxyHost = proxy_host;
-      proxyPort = proxy_port;
-      if (proxy_user && proxy_pass) {
-        proxyUser = proxy_user;
-        proxyPass = proxy_pass;
-        useAuth = true;
-      }
+      proxyString = `--proxy-server=${proxy_host}:${proxy_port}`;
     }
 
-    const puppeteerArgs = ["--no-sandbox", "--disable-setuid-sandbox"];
-    if (useProxy)
-      puppeteerArgs.push(`--proxy-server=${proxyHost}:${proxyPort}`);
-
+    // Puppeteer no Render precisa usar o chromium do pacote
     browser = await puppeteerExtra.launch({
-      executablePath: "/usr/bin/google-chrome", // Caminho do Chrome no Docker
-      headless: true,
+      executablePath: await chromium.executablePath(), // <- Usando o chromium do pacote
+      headless: chromium.headless,
       args: [
+        ...chromium.args,
         "--no-sandbox",
         "--disable-setuid-sandbox",
         "--lang=pt-BR",
-        useProxy ? `--proxy-server=${proxyHost}:${proxyPort}` : "",
+        proxyString,
       ].filter(Boolean),
     });
 
@@ -57,14 +50,14 @@ app.get("/api/login", async (req, res) => {
       "Accept-Language": "pt-BR,pt;q=0.9",
     });
 
-    if (useProxy && useAuth) {
-      await page.authenticate({ username: proxyUser, password: proxyPass });
+    if (useProxy && proxy_user && proxy_pass) {
+      await page.authenticate({ username: proxy_user, password: proxy_pass });
     }
 
-    // CÓDIGO NOVO E CORRIGIDO
+    // Timeout maior (90s) + networkidle2
     await page.goto("https://br.shein.com/user/auth/login?direction=nav", {
       waitUntil: "networkidle2",
-      timeout: 90000, // 90 segundos
+      timeout: 90000,
     });
 
     // Campo de email
@@ -203,6 +196,7 @@ app.get("/api/login", async (req, res) => {
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
 });
+
 
 
 
