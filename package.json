@@ -2,12 +2,12 @@
   "dependencies": {
     "@sparticuz/chromium": "^123.0.1",
     "express": "^5.1.0",
-    "fs-extra": "^11.2.0",
     "puppeteer-core": "^22.13.1",
     "puppeteer-extra": "^3.3.6",
     "puppeteer-extra-plugin-stealth": "^2.11.2",
+    "puppeteer-extra-plugin-user-preferences": "^2.4.1",
     "puppeteer-extra-plugin-user-data-dir": "^2.4.1",
-    "puppeteer-extra-plugin-user-preferences": "^2.4.1"
+    "fs-extra": "^11.2.0"
   },
   "scripts": {
     "start": "node index.js"
